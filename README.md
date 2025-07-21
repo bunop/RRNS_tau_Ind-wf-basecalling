@@ -42,7 +42,7 @@ using:
 
 ```bash
 nextflow run ~/Projects/wf-basecalling/ -profile singularity -resume \
-    -c conf/custom.config -params-file conf/params.json
+    -c conf/custom-wf-basecalling.config -params-file conf/params-5mCG_5hmCG.json
 ```
 
 > NOTE: is not possible to call `--duplex=true` and `--barcode_kit=SQK-NBD114-24`

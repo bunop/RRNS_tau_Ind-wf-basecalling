@@ -13,6 +13,7 @@ genome*
 # nextflow gitignore file
 .nextflow*
 work/
+data
 data/
 results/
 .DS_Store
