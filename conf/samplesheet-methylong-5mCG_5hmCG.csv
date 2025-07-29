@@ -1,0 +1,7 @@
+sample,modbam,ref,method
+A19_jun,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/demux-5mCG_5hmCG/21cee8e2-69d9-4649-8516-1965c3198e88_A19_jun.bam,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/genome/GCF_002263795.3_ARS-UCD2.0_genomic.fa,ont
+A21_jun,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/demux-5mCG_5hmCG/21cee8e2-69d9-4649-8516-1965c3198e88_A21_jun.bam,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/genome/GCF_002263795.3_ARS-UCD2.0_genomic.fa,ont
+A25_jun,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/demux-5mCG_5hmCG/21cee8e2-69d9-4649-8516-1965c3198e88_A25_jun.bam,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/genome/GCF_002263795.3_ARS-UCD2.0_genomic.fa,ont
+N03_jun,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/demux-5mCG_5hmCG/21cee8e2-69d9-4649-8516-1965c3198e88_N03_jun.bam,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/genome/GCF_002263795.3_ARS-UCD2.0_genomic.fa,ont
+N07_jun,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/demux-5mCG_5hmCG/21cee8e2-69d9-4649-8516-1965c3198e88_N07_jun.bam,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/genome/GCF_002263795.3_ARS-UCD2.0_genomic.fa,ont
+N13_jun,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/demux-5mCG_5hmCG/21cee8e2-69d9-4649-8516-1965c3198e88_N13_jun.bam,/g100_work/IscrC_BioGPUPX/RRNS_tau_Ind-wf-basecalling/genome/GCF_002263795.3_ARS-UCD2.0_genomic.fa,ont

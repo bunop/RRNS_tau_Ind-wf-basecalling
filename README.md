@@ -48,12 +48,6 @@ nextflow run ~/Projects/wf-basecalling/ -profile singularity -resume \
 > NOTE: is not possible to call `--duplex=true` and `--barcode_kit=SQK-NBD114-24`
 > at the same time, *demultiplexing* should be done after basecalling.
 
-
-
-
-
-
-
 ## Post processing
 
 ### calling PyCOQC
@@ -62,7 +56,7 @@ Calculate quality control metrics using `pycoQC`:
 
 ```bash
 singularity run $NXF_SINGULARITY_CACHEDIR/pip_pycoqc_setuptools_31d5a8754dcc1b68.sif \
-    pycoQC -f output/SAMPLE.summary.tsv.gz -o output/SAMPLE.summary.html
+    pycoQC -f output_wf-basecalling-5mCG_5hmCG/SAMPLE.summary.tsv.gz -o output_wf-basecalling-5mCG_5hmCG/SAMPLE.summary.html
 ```
 
 ### Join passed simplex and duplex reads
@@ -80,7 +74,7 @@ SAMPLE.pass.simplex.cram
 Let's join the `pass` reads into a single file:
 
 ```bash
-cd output
+cd output_wf-basecalling-5mCG_5hmCG
 singularity run $NXF_SINGULARITY_CACHEDIR/depot.galaxyproject.org-singularity-samtools-1.21--h50ea8bc_0.img \
     samtools merge -o SAMPLE.pass.all.cram SAMPLE.pass.duplex.cram SAMPLE.pass.simplex.cram
 singularity run $NXF_SINGULARITY_CACHEDIR/depot.galaxyproject.org-singularity-samtools-1.21--h50ea8bc_0.img \
@@ -94,11 +88,14 @@ Do demultiplexing using `dorado`:
 
 ```bash
 singularity run $NXF_SINGULARITY_CACHEDIR/ontresearch-dorado-shae9327ad17e023b76e4d27cf287b6b9d3a271092b.img \
-    dorado demux --kit-name SQK-NBD114-24 --threads 2 --verbose --output-dir demux \
-    --sample-sheet conf/samplesheet.csv output/SAMPLE.pass.all.cram
+    dorado demux --kit-name SQK-NBD114-24 --threads 2 --verbose --output-dir demux-5mCG_5hmCG \
+    --sample-sheet conf/samplesheet.csv output_wf-basecalling-5mCG_5hmCG/SAMPLE.pass.all.cram
 ```
 
-> NOTE: even if I merged all the data into a single file, `dorado` will
-> automatically split the reads into different files based on the barcodes
-> and run_id (`adaptive_sampling_Tau_Ind_1`, `Adaptive_Sampling_Tau_Ind_2`,
-> `adaptive_sampling_Tau_Ind_3`)
+## Call nf-core/methylong
+
+Data are stored in `demux-5mCG_5hmCG` folder:
+
+```bash
+sbatch scripts/launch-methylong-5mCG_5hmCG-traditional.sh
+```
