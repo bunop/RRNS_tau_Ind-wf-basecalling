@@ -48,6 +48,18 @@ nextflow run ~/Projects/wf-basecalling/ -profile singularity -resume \
 > NOTE: is not possible to call `--duplex=true` and `--barcode_kit=SQK-NBD114-24`
 > at the same time, *demultiplexing* should be done after basecalling.
 
+### Calling wf-basecalling on Galileo cluster
+
+To call the `wf-basecalling` pipeline on the Galileo cluster, use the following command:
+
+```bash
+scripts/launch-wf-basecalling-5mC-5hmC.sh
+```
+
+> NOTE: is not possible to call this pipeline since the max allowed time for CPU
+> job is 8 hours, and those processes require more time to complete.
+> TODO: test with `cnr-ibba/nf-dorado-calling` pipeline
+
 ## Post processing
 
 ### calling PyCOQC
@@ -97,5 +109,6 @@ singularity run $NXF_SINGULARITY_CACHEDIR/ontresearch-dorado-shae9327ad17e023b76
 Data are stored in `demux-5mCG_5hmCG` folder:
 
 ```bash
+sbatch scripts/launch-methylong-5mCG_5hmCG-cpg.sh
 sbatch scripts/launch-methylong-5mCG_5hmCG-traditional.sh
 ```
