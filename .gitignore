@@ -9,6 +9,7 @@ genome*
 .tmp/
 *.duckdb*
 *.bed*
+*.log
 
 # nextflow gitignore file
 .nextflow*
