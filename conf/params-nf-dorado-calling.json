@@ -1,0 +1,7 @@
+{
+    "input": "data/pod5",
+    "dorado_models": "sup,5mC_5hmC",
+    "outdir": "output_nf-dorado-calling-5mC_5hmC",
+    "kit_name": "SQK-NBD114-24",
+    "sample_sheet": "conf/samplesheet-nf-dorado-calling.csv"
+}
