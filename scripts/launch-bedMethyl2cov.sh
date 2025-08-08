@@ -24,25 +24,33 @@ fi
 
 # Execute the bedMethyl2cov script with the specified input and output directories
 # CpG 5mCG and 5hmCG
-# scripts/bedMethyl2cov.py \
-#     -i output_methylong-5mCG_5hmCG-cpg/ont/ \
-#     -o output_methylong-5mCG_5hmCG-cpg/cov/ \
-#     &> 5mCG_5hmCG-cpg-cov.log
+if [ ! -d "output_methylong-5mCG_5hmCG-cpg/cov/" ]; then
+    scripts/bedMethyl2cov.py \
+        -i output_methylong-5mCG_5hmCG-cpg/ont/ \
+        -o output_methylong-5mCG_5hmCG-cpg/cov/ \
+        &> 5mCG_5hmCG-cpg-cov.log
+fi
 
-scripts/bedMethyl2cov.py \
-    -i output_methylong-5mCG_5hmCG-cpg/ont/ \
-    -o output_methylong-5mCG_5hmCG-cpg/cov_5X/ --custom_score 5 \
-    &> 5mCG_5hmCG-cpg-cov_5X.log
+if [ ! -d "output_methylong-5mCG_5hmCG-cpg/cov_5X/" ]; then
+    scripts/bedMethyl2cov.py \
+        -i output_methylong-5mCG_5hmCG-cpg/ont/ \
+        -o output_methylong-5mCG_5hmCG-cpg/cov_5X/ --custom_score 5 \
+        &> 5mCG_5hmCG-cpg-cov_5X.log
+fi
 
 # traditional 5mCG and 5hmCG
-# scripts/bedMethyl2cov.py \
-#     -i output_methylong-5mCG_5hmCG-traditional/ont/ \
-#     -o output_methylong-5mCG_5hmCG-traditional/cov/ \
-#     &> 5mCG_5hmCG-traditional-cov.log
+if [ ! -d "output_methylong-5mCG_5hmCG-traditional/cov/" ]; then
+    scripts/bedMethyl2cov.py \
+        -i output_methylong-5mCG_5hmCG-traditional/ont/ \
+        -o output_methylong-5mCG_5hmCG-traditional/cov/ \
+        &> 5mCG_5hmCG-traditional-cov.log
+fi
 
-scripts/bedMethyl2cov.py \
-    -i output_methylong-5mCG_5hmCG-traditional/ont/ \
-    -o output_methylong-5mCG_5hmCG-traditional/cov_5X/ --custom_score 5 \
-    &> 5mCG_5hmCG-traditional-cov_5X.log
+if [ ! -d "output_methylong-5mCG_5hmCG-traditional/cov_5X/" ]; then
+    scripts/bedMethyl2cov.py \
+        -i output_methylong-5mCG_5hmCG-traditional/ont/ \
+        -o output_methylong-5mCG_5hmCG-traditional/cov_5X/ --custom_score 5 \
+        &> 5mCG_5hmCG-traditional-cov_5X.log
+fi
 
 echo "bedMethyl2cov processing completed successfully."
