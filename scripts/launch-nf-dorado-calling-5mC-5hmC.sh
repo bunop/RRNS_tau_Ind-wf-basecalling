@@ -15,7 +15,7 @@
 export CUSTOM_CONFIG_BASE=${WORK}/nf-configs
 
 # mind to the pipeline version (required)
-nextflow run cnr-ibba/nf-dorado-calling -r dev \
+nextflow run cnr-ibba/nf-dorado-calling -r pod5_subset \
     --custom_config_base ${CUSTOM_CONFIG_BASE} \
     -config ${CUSTOM_CONFIG_BASE}/nfcore_custom.config \
     -config conf/custom-nf-dorado-calling.config \
