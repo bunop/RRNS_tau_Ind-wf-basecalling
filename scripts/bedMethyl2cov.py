@@ -52,7 +52,6 @@ class bedMethylRecord:
     count_fail: int
     count_diff: int
     count_nocall: int
-    custom_score: int = field(init=False, default=0)
 
     def __post_init__(self):
         self.chromStart = int(self.chromStart)
@@ -70,9 +69,6 @@ class bedMethylRecord:
         self.count_diff = int(self.count_diff)
         self.count_nocall = int(self.count_nocall)
 
-        # custom fields
-        self.custom_score = self.count_modified + self.count_canonical
-
     def validate(self) -> list[str]:
         errors = []
 
@@ -86,35 +82,18 @@ class bedMethylRecord:
         Convert the bedMethyl record to a cov record.
         """
 
-        # consider this record: bedMethylRecord(chrom='NC_037328.1', chromStart=35464,
-        # chromEnd=35465, name='h', score=9, strand='-', thickStart=35464, thickEnd=35465,
-        # color='255,0,0', valid_coverage=9, percent_modified=11.11, count_modified=1,
-        # count_canonical=0, count_other_mod=8, count_delete=0, count_fail=0, count_diff=2,
-        # count_nocall=0): modkit expect to have 8 different modified call from name,
-        # and this percent modified is calculated as count_modified / valid_coverage * 100.
-        # I cannot handle count_other_mod, count_delete, count_fail, count_diff, count_nocall
-        # so I will recalculate percent_modified as
-        # count_modified / (count_canonical + count_modified) * 100
-        denominator = self.count_canonical + self.count_modified
-        if denominator == 0:
-            percent_modified = 0.0
-        else:
-            percent_modified = round((self.count_modified / denominator) * 100, 2)
-
-        if percent_modified != self.percent_modified:
-            logger.debug(
-                f"Percent modified mismatch: modkit:{self.percent_modified} vs self:"
-                f"{percent_modified} for {self.name} at {self.chrom}:{self.chromStart}-"
-                f"{self.chromEnd}"
-            )
+        # note: bismark doesn't have a valid coverage column: last two columns
+        # are for methylated and unmethylated counts. Calculate unmethylated
+        # counts as valid_coverage - methylated counts
+        unmethylated_count = self.valid_coverage - self.count_modified
 
         return [
             self.chrom,
             self.chromStart + 1,  # Convert to 1-based index
             self.chromEnd,
-            percent_modified,
+            self.percent_modified,
             self.count_modified,
-            self.count_canonical
+            unmethylated_count
         ]
 
 
@@ -167,10 +146,9 @@ if __name__ == "__main__":
         help="Minimum score for filtering records (default: %(default)s)",
     )
     parser.add_argument(
-        "--custom_score", type=int, default=1,
+        "--valid_coverage", type=int, default=1,
         help=(
-            "Custom score for filtering records (intended as count_modified + "
-            "count_canonical - default: %(default)s)"
+            "Minimum valid coverage for filtering records (default: %(default)s)"
         )
     )
     parser.add_argument(
@@ -200,7 +178,7 @@ if __name__ == "__main__":
             if args.score and record.score < args.score:
                 continue
 
-            if args.custom_score and record.custom_score < args.custom_score:
+            if args.valid_coverage and record.valid_coverage < args.valid_coverage:
                 continue
 
             if record.name not in handles:
