@@ -6,9 +6,6 @@
 #SBATCH --mem=16G
 #SBATCH --output=bedMethyl2cov.log
 #SBATCH --job-name=bedMethyl2cov
-#SBATCH --account=IscrC_BioGPUPX    # account name
-#SBATCH --partition=g100_usr_prod   # partition name (see https://docs.hpc.cineca.it/hpc/galileo.html#job-managing-and-slurm-partitions)
-#SBATCH --qos=normal                # quality of service (see https://docs.hpc.cineca.it/hpc/galileo.html#job-managing-and-slurm-partitions)
 
 # Check if conda or micromamba is available and activate the environment accordingly
 if command -v conda &> /dev/null; then
@@ -31,26 +28,12 @@ if [ ! -d "output_methylong-5mCG_5hmCG-cpg/cov/" ]; then
         &> 5mCG_5hmCG-cpg-cov.log
 fi
 
-if [ ! -d "output_methylong-5mCG_5hmCG-cpg/cov_5X/" ]; then
-    scripts/bedMethyl2cov.py \
-        -i output_methylong-5mCG_5hmCG-cpg/ont/ \
-        -o output_methylong-5mCG_5hmCG-cpg/cov_5X/ --custom_score 5 \
-        &> 5mCG_5hmCG-cpg-cov_5X.log
-fi
-
 # traditional 5mCG and 5hmCG
 if [ ! -d "output_methylong-5mCG_5hmCG-traditional/cov/" ]; then
     scripts/bedMethyl2cov.py \
         -i output_methylong-5mCG_5hmCG-traditional/ont/ \
         -o output_methylong-5mCG_5hmCG-traditional/cov/ \
         &> 5mCG_5hmCG-traditional-cov.log
-fi
-
-if [ ! -d "output_methylong-5mCG_5hmCG-traditional/cov_5X/" ]; then
-    scripts/bedMethyl2cov.py \
-        -i output_methylong-5mCG_5hmCG-traditional/ont/ \
-        -o output_methylong-5mCG_5hmCG-traditional/cov_5X/ --custom_score 5 \
-        &> 5mCG_5hmCG-traditional-cov_5X.log
 fi
 
 echo "bedMethyl2cov processing completed successfully."
