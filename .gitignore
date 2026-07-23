@@ -12,6 +12,7 @@ genome*
 *.log
 logs/
 test_*/
+stats-*/
 
 # nextflow gitignore file
 .nextflow*

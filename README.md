@@ -202,3 +202,49 @@ across samples do map once secondary alignments and a lower score threshold
 are allowed, indicating the pipeline's strict settings are discarding a
 substantial share of reads that land in multi-mapping/repetitive regions
 rather than reads that are simply not present in the reference.
+
+### 3. Read-length profile of the three read groups
+
+RRNS reads are `MspI`-digested to 150-450 bp, so shorter reads have less
+unique flanking context and may be more prone to ambiguous (secondary) or
+failed alignment. To test that, `scripts/unaligned_reads/length_analysis.sh
+<SAMPLE>` extracts, per sample, the per-read query length (and secondary
+count where applicable) of three groups:
+
+- `originally_mapped` — primary alignments from the pipeline's own BAM
+  (`ont/<SAMPLE>/alignment/<SAMPLE>.bam`), used as-is, no remapping.
+- `recovered` — primary alignments from the permissive remap BAM
+  (`unaligned_reads/remap/<SAMPLE>.permissive.bam`, see above), i.e. reads
+  unmapped in the original BAM that got a hit under the relaxed settings.
+- `still_unmapped` — reads unmapped in both BAMs, with length read back from
+  the original unaligned FASTQ.
+
+These are per-sample SLURM jobs (same reasoning as above: the permissive
+BAMs are 40-50 GB each, dominated by secondary alignments, so running all
+six serially would be far slower than one job per sample):
+
+```bash
+sbatch --job-name=length_analysis_A19_jun scripts/unaligned_reads/length_analysis.sh A19_jun
+sbatch --job-name=length_analysis_A21_jun scripts/unaligned_reads/length_analysis.sh A21_jun
+sbatch --job-name=length_analysis_A25_jun scripts/unaligned_reads/length_analysis.sh A25_jun
+sbatch --job-name=length_analysis_N03_jun scripts/unaligned_reads/length_analysis.sh N03_jun
+sbatch --job-name=length_analysis_N07_jun scripts/unaligned_reads/length_analysis.sh N07_jun
+sbatch --job-name=length_analysis_N13_jun scripts/unaligned_reads/length_analysis.sh N13_jun
+```
+
+Each job writes per-sample/per-group CSVs, gzipped directly, under
+`stats-unaligned/length_analysis/per_sample/` (`<SAMPLE>.<group>.csv.gz`).
+Once all jobs have completed, merge them into a single per-read CSV and
+print the raw counts per sample/group:
+
+```bash
+python scripts/unaligned_reads/merge_length_stats.py \
+    -i stats-unaligned/length_analysis/per_sample \
+    -o stats-unaligned/length_analysis/read_length_stats.csv.gz
+```
+
+`read_length_stats.csv.gz` has one row per read (`sample`, `group`,
+`read_id`, `read_length`, `n_secondary`), with no subsampling or statistical
+filtering applied — that's left to the downstream Quarto report (both
+pandas' `read_csv` and R's `readr` read `.gz` CSVs transparently). Pass a
+plain `.csv` path to `-o` instead if an uncompressed output is preferred.
