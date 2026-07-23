@@ -112,3 +112,93 @@ Data are stored in `demux-5mCG_5hmCG` folder:
 sbatch scripts/launch-methylong-5mCG_5hmCG-cpg.sh
 sbatch scripts/launch-methylong-5mCG_5hmCG-traditional.sh
 ```
+
+## Investigate unaligned reads
+
+`nf-core/methylong` (v1.0.0) aligns with `minimap2 -y -Y -x lr:hq --secondary=no`
+(`ONT_MINIMAP2_ALIGN`, confirmed from `work/*/.command.sh` of the actual runs):
+the `lr:hq` preset is tuned for Q20+ reads and `--secondary=no` discards every
+multi-mapping alignment outright, so a read whose best hit isn't clearly
+unique never gets a chance at a secondary/lower-scoring placement. A
+non-trivial fraction of reads per sample end up unaligned as a result.
+
+We want to demonstrate two things about those unaligned reads, for each
+sample of `test_methylong-5mCG_5hmCG-traditional`:
+
+1. **What they are** — are they enriched for repetitive elements (SINEs,
+   LINEs, satellites, low-complexity/simple repeats), which would explain why
+   they fail to place uniquely under strict settings?
+2. **Whether they're actually mappable** — if we relax the aligner (allow
+   secondary/multi-mapping hits, lower the score threshold, use a
+   higher-error-tolerant preset), how many of them do map, and how many
+   remain genuinely unmappable? This tells us whether the pipeline's
+   unaligned rate mostly reflects the strictness of its settings, or reads
+   that don't belong to the reference at all.
+
+The analysis produces two CSV reports in
+`test_methylong-5mCG_5hmCG-traditional/unaligned_reads/`.
+
+### 1. RepeatMasker profile of unaligned reads
+
+For each sample, `scripts/unaligned_reads/unaligned_reads_<SAMPLE>.sh`
+extracts the unmapped reads (`samtools view -f 4`) from the pipeline's BAM,
+converts them to FASTA, and runs `RepeatMasker -species cow -xsmall` on them.
+These are independent per-sample SLURM jobs, launched with:
+
+```bash
+sbatch scripts/unaligned_reads/unaligned_reads_A19_jun.sh
+sbatch scripts/unaligned_reads/unaligned_reads_A21_jun.sh
+sbatch scripts/unaligned_reads/unaligned_reads_A25_jun.sh
+sbatch scripts/unaligned_reads/unaligned_reads_N03_jun.sh
+sbatch scripts/unaligned_reads/unaligned_reads_N07_jun.sh
+sbatch scripts/unaligned_reads/unaligned_reads_N13_jun.sh
+```
+
+Each job writes fastq/fasta under `unaligned_reads/{fastq,fasta}/` and a
+`<SAMPLE>.fasta.tbl` RepeatMasker summary. Once all jobs have completed,
+combine the per-sample `.tbl` files into a single tidy CSV:
+
+```bash
+python scripts/unaligned_reads/summarize_repeatmasker.py \
+    -i test_methylong-5mCG_5hmCG-traditional/unaligned_reads/fasta \
+    -o test_methylong-5mCG_5hmCG-traditional/unaligned_reads/repeatmasker_summary.csv
+```
+
+### 2. Recovery rate under a permissive remap
+
+`scripts/unaligned_reads/remap_unaligned_reads.sh <SAMPLE>` re-extracts the
+same unmapped reads (this time keeping the `MM`/`ML`/`MN` methylation tags,
+needed so `minimap2 -y` can propagate them and `modkit` can still call
+methylation downstream) and remaps them with more permissive settings than
+the pipeline: `-x map-ont --secondary=yes -N 50 -p 0.5` instead of
+`-x lr:hq --secondary=no`. It then runs `samtools flagstat` on the result.
+Since the `#SBATCH --job-name` can't reference the sample argument, the job
+name is overridden at submit time, one job per sample:
+
+```bash
+sbatch --job-name=remap_unaligned_A19_jun scripts/unaligned_reads/remap_unaligned_reads.sh A19_jun
+sbatch --job-name=remap_unaligned_A21_jun scripts/unaligned_reads/remap_unaligned_reads.sh A21_jun
+sbatch --job-name=remap_unaligned_A25_jun scripts/unaligned_reads/remap_unaligned_reads.sh A25_jun
+sbatch --job-name=remap_unaligned_N03_jun scripts/unaligned_reads/remap_unaligned_reads.sh N03_jun
+sbatch --job-name=remap_unaligned_N07_jun scripts/unaligned_reads/remap_unaligned_reads.sh N07_jun
+sbatch --job-name=remap_unaligned_N13_jun scripts/unaligned_reads/remap_unaligned_reads.sh N13_jun
+```
+
+Each job writes to `unaligned_reads/remap/` and leaves a
+`<SAMPLE>.permissive.flagstat.txt`. Once all jobs have completed, combine
+them into a single tidy CSV:
+
+```bash
+python scripts/unaligned_reads/summarize_flagstat.py \
+    -i test_methylong-5mCG_5hmCG-traditional/unaligned_reads/remap \
+    -o test_methylong-5mCG_5hmCG-traditional/unaligned_reads/flagstat_summary.csv
+```
+
+`flagstat_summary.csv` reports, per sample, how many of the originally
+unaligned reads got a primary alignment back (`n_primary_mapped` /
+`primary_mapped_pct`) versus how many are still unmapped
+(`n_still_unmapped`) — e.g. in the current run, 68-80% of "unaligned" reads
+across samples do map once secondary alignments and a lower score threshold
+are allowed, indicating the pipeline's strict settings are discarding a
+substantial share of reads that land in multi-mapping/repetitive regions
+rather than reads that are simply not present in the reference.
